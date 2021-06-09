@@ -1,0 +1,23 @@
+{
+  "name": "config-downlink-tool",
+  "version": "1.0.0",
+  "description": "Config Lora devices thru downlink",
+  "main": "downtool.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "lora",
+    "lorawan",
+    "modbus",
+    "connect2lora"
+  ],
+  "author": "Patrik Gullstrand",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-ws": "^5.0.2",
+    "http": "^0.0.1-security",
+    "mqtt": "^4.2.6"
+  }
+}
