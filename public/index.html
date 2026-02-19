@@ -1,20 +1,124 @@
 <!DOCTYPE html>
 <html>
     <head>
-
+        <title>Config Downlink Tool</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            .config-section {
+                background-color: #f5f5f5;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 5px;
+            }
+            .status {
+                padding: 10px;
+                margin-bottom: 10px;
+                border-radius: 3px;
+            }
+            .status.connected {
+                background-color: #d4edda;
+                color: #155724;
+            }
+            .status.disconnected {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
+            input[type="text"] {
+                padding: 5px;
+                margin: 5px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+            }
+            input[type="button"] {
+                padding: 8px 15px;
+                margin: 5px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+            }
+            input[type="button"]:hover {
+                background-color: #0056b3;
+            }
+            #communication {
+                background-color: #f8f9fa;
+                padding: 10px;
+                border: 1px solid #dee2e6;
+                border-radius: 3px;
+                min-height: 200px;
+                max-height: 400px;
+                overflow-y: auto;
+                font-family: monospace;
+                font-size: 12px;
+                white-space: pre-wrap;
+            }
+            h1 {
+                color: #333;
+            }
+            h2 {
+                color: #555;
+                margin-top: 20px;
+            }
+        </style>
     </head>
     <body>
+    <h1>Config Downlink Tool</h1>
+    <p>Tool to configure LoRa devices through downlink commands.</p>
+    
+    <div class="config-section">
+        <h2>WebSocket Configuration</h2>
+        <label for="wsUrl">WebSocket URL:</label>
+        <input type="text" id="wsUrl" name="wsUrl" value="ws://localhost:3001" size="40">
+        <input type="button" value="Connect" onclick="connectToServer();">
+        <div id="status" class="status disconnected">Disconnected</div>
+    </div>
+
     <script>
 
-        var ws =null;
+        var ws = null;
+        var wsUrl = 'ws://localhost:3001';
+
+        function updateStatus(connected) {
+            var statusDiv = document.getElementById("status");
+            if (connected) {
+                statusDiv.className = "status connected";
+                statusDiv.innerText = "Connected to " + wsUrl;
+            } else {
+                statusDiv.className = "status disconnected";
+                statusDiv.innerText = "Disconnected";
+            }
+        }
+
+        function connectToServer() {
+            wsUrl = document.getElementById("wsUrl").value;
+            if (ws) {
+                ws.close();
+            }
+            connect();
+        }
 
         function connect() {
-            ws = new WebSocket('ws://localhost:3001');
+            try {
+                ws = new WebSocket(wsUrl);
+            } catch(e) {
+                console.error('Failed to create WebSocket:', e);
+                updateStatus(false);
+                return;
+            }
+            
             ws.onopen = function() {
-            // subscribe to some channels
-            ws.send(JSON.stringify({
-                //.... some message the I must send when I connect ....
-            }));
+                console.log('WebSocket connected');
+                updateStatus(true);
+                // subscribe to some channels
+                ws.send(JSON.stringify({
+                    //.... some message the I must send when I connect ....
+                }));
             };
 
             ws.onmessage = function(event) {
@@ -24,50 +128,76 @@
             };
 
             ws.onclose = function(e) {
-            console.log('Socket is closed. Reconnect will be attempted in 2 second.', e.reason);
-            setTimeout(function() {
-                connect();
-            }, 2000);
+                console.log('Socket is closed. Reconnect will be attempted in 2 second.', e.reason);
+                updateStatus(false);
+                setTimeout(function() {
+                    connect();
+                }, 2000);
             };
 
             ws.onerror = function(err) {
-            console.error('Socket encountered error: ', err.message, 'Closing socket');
-            ws.close();
+                console.error('Socket encountered error: ', err.message, 'Closing socket');
+                updateStatus(false);
+                ws.close();
             };
         }
 
+        // Initial connection attempt
         connect();
        
     </script>
-        Modbus control
+    
+    <h2>Modbus Control</h2>
+    <div class="config-section">
+        <h3>Command Reference</h3>
 <pre>
-    CMD
+CMD
 01  Transmit Time Interval (4b)
 04  Reset (2)
-08 Pull a uplink
+08  Pull a uplink
 A8  Modbus commando devcfg
-*/
-//configobj.data = hexToBase64("04FF")
 
 [cmd][crc][datlen]
-/*
+
 CMD: a9 = set command1
 CRC: 00 = no crc / 01 add crc16
-datlen: Modbus commando lenght
+datlen: Modbus commando length
 
 06 = modbus addr
-04 = funccode read inbup reg
+04 = funccode read input reg
 00
 01 = pressure reg
 </pre>
+    </div>
+    
+    <div class="config-section">
+        <h3>Send Command</h3>
         <form id="modbus" action="/cmd" method="post">
-            <input name="deveui" value="a84041725182c91b">
-            <input name="cmd" value="">
-            <input type="button" name="send" value="send" onclick="ws.send(deveui.value + ',' + cmd.value );">
+            <label for="deveui">Device EUI:</label>
+            <input type="text" name="deveui" id="deveui" value="a84041725182c91b" size="25">
+            <br>
+            <label for="cmd">Command:</label>
+            <input type="text" name="cmd" id="cmd" value="" size="30">
+            <br>
+            <input type="button" name="send" value="Send Command" onclick="sendCommand();">
         </form>
+    </div>
 
-        <div id="communication">
+    <div class="config-section">
+        <h3>Communication Log</h3>
+        <div id="communication"></div>
+    </div>
 
-        </div>
+    <script>
+        function sendCommand() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert('WebSocket is not connected. Please connect first.');
+                return;
+            }
+            var deveui = document.getElementById('deveui').value;
+            var cmd = document.getElementById('cmd').value;
+            ws.send(deveui + ',' + cmd);
+        }
+    </script>
     </body>
 </html>
