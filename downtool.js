@@ -109,9 +109,14 @@ app.get('/api/command-references', (req, res) => {
 app.get('/api/command-references/:filename', (req, res) => {
   const filename = req.params.filename
   
-  // Validate filename to prevent directory traversal
-  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+  // Validate filename to prevent directory traversal and null byte injection
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\') || filename.includes('\0')) {
     return res.status(400).json({ error: 'Invalid filename' })
+  }
+  
+  // Ensure only .md files are served (defense-in-depth)
+  if (!filename.endsWith('.md')) {
+    return res.status(400).json({ error: 'Invalid file type' })
   }
   
   const filePath = path.join(__dirname, 'commandreferens', filename)

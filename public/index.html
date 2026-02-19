@@ -193,7 +193,7 @@
                 return;
             }
             
-            fetch('/api/command-references/' + encodeURIComponent(filename))
+            fetch(`/api/command-references/${encodeURIComponent(filename)}`)
                 .then(response => response.json())
                 .then(data => {
                     // Display the content in a pre-formatted way with escaped filename
