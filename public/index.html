@@ -70,7 +70,7 @@
     <body>
     <h1>Config Downlink Tool</h1>
     <p>Tool to configure LoRa devices through downlink commands.</p>
-    
+
     <div class="config-section">
         <h2>WebSocket Configuration</h2>
         <label for="wsUrl">WebSocket URL:</label>
@@ -111,7 +111,7 @@
                 updateStatus(false);
                 return;
             }
-            
+
             ws.onopen = function() {
                 console.log('WebSocket connected');
                 updateStatus(true);
@@ -144,12 +144,12 @@
 
         // Initial connection attempt
         connect();
-       
+
     </script>
-    
-    <h2>Modbus Control</h2>
+
+    <h2>Command Reference</h2>
     <div class="config-section">
-        <h3>Command Reference</h3>
+        <h3>Dragino modbus</h3>
 <pre>
 CMD
 01  Transmit Time Interval (4b)
@@ -169,7 +169,7 @@ datlen: Modbus commando length
 01 = pressure reg
 </pre>
     </div>
-    
+
     <div class="config-section">
         <h3>Send Command</h3>
         <form id="modbus" action="/cmd" method="post">
@@ -200,14 +200,14 @@ datlen: Modbus commando length
             var deveui = document.getElementById('deveui').value;
             var cmd = document.getElementById('cmd').value;
             var fport = document.getElementById('fport').value;
-            
+
             // Validate fPort
             var fportNum = parseInt(fport);
             if (isNaN(fportNum) || fportNum < 1 || fportNum > 223) {
                 alert('FPort must be a number between 1 and 223');
                 return;
             }
-            
+
             ws.send(deveui + ',' + cmd + ',' + fport);
         }
     </script>
