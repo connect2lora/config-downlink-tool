@@ -80,6 +80,12 @@ app.post('/cmd', (req, res) => {
 app.get('/api/command-references', (req, res) => {
   const commandRefDir = path.join(__dirname, 'commandreferens')
   
+  // Check if directory exists
+  if (!fs.existsSync(commandRefDir)) {
+    console.error('Command references directory not found')
+    return res.status(404).json({ error: 'Command references directory not found' })
+  }
+  
   fs.readdir(commandRefDir, (err, files) => {
     if (err) {
       console.error('Error reading commandreferens directory:', err)
@@ -110,10 +116,16 @@ app.get('/api/command-references/:filename', (req, res) => {
   
   const filePath = path.join(__dirname, 'commandreferens', filename)
   
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    console.error('Command reference file not found:', filename)
+    return res.status(404).json({ error: 'Command reference not found' })
+  }
+  
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
       console.error('Error reading command reference file:', err)
-      return res.status(404).json({ error: 'Command reference not found' })
+      return res.status(500).json({ error: 'Failed to read command reference file' })
     }
     
     res.json({ filename, content: data })

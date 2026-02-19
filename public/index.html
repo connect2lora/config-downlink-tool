@@ -196,8 +196,8 @@
             fetch('/api/command-references/' + encodeURIComponent(filename))
                 .then(response => response.json())
                 .then(data => {
-                    // Display the content in a pre-formatted way
-                    contentDiv.innerHTML = '<h3>' + filename.replace('.md', '') + '</h3><pre>' + 
+                    // Display the content in a pre-formatted way with escaped filename
+                    contentDiv.innerHTML = '<h3>' + escapeHtml(filename.replace('.md', '')) + '</h3><pre>' + 
                                           escapeHtml(data.content) + '</pre>';
                 })
                 .catch(error => {
