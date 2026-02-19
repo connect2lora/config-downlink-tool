@@ -14,13 +14,20 @@ To use it:
 
 1. npm install
 
-2. Edit mqtt_loraserver in downtool.js to point to your chirpstack. 
+2. Copy `.env.example` to `.env` and configure your settings:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` and set:
+   - `MQTT_LORASERVER`: URL of your MQTT server (e.g., `mqtt://loraserver` or `mqtt://localhost:1883`)
+   - `APPLICATION_ID`: Your ChirpStack application ID
+   - `CHIRPSTACK_VERSION`: Set to `3` for ChirpStack v3 or `4` for ChirpStack v4
+   - `PORT`: Server port (default: 3001)
 
-3. Set your application id 
+3. nodejs downtool.js
 
-4. nodejs downtool.js
-
-5. Open http://localhost:3001 or use the [GitHub Pages interface](https://connect2lora.github.io/config-downlink-tool/) and configure it to connect to ws://localhost:3001
+4. Open http://localhost:3001 or use the [GitHub Pages interface](https://connect2lora.github.io/config-downlink-tool/) and configure it to connect to ws://localhost:3001
 
 ## Using GitHub Pages
 
