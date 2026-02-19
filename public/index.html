@@ -173,6 +173,9 @@ datlen: Modbus commando length
     <div class="config-section">
         <h3>Send Command</h3>
         <form id="modbus" action="/cmd" method="post">
+            <label for="applicationId">Application ID:</label>
+            <input type="text" name="applicationId" id="applicationId" value="15" size="10">
+            <br>
             <label for="deveui">Device EUI:</label>
             <input type="text" name="deveui" id="deveui" value="a84041725182c91b" size="25">
             <label for="fport">FPort:</label>
@@ -196,6 +199,7 @@ datlen: Modbus commando length
                 alert('WebSocket is not connected. Please connect first.');
                 return;
             }
+            var applicationId = document.getElementById('applicationId').value;
             var deveui = document.getElementById('deveui').value;
             var cmd = document.getElementById('cmd').value;
 
@@ -206,6 +210,12 @@ datlen: Modbus commando length
 
             var fport = document.getElementById('fport').value;
 
+            // Validate applicationId
+            if (!applicationId || applicationId.trim() === '') {
+                alert('Application ID cannot be empty');
+                return;
+            }
+
             // Validate fPort
             var fportNum = parseInt(fport);
             if (isNaN(fportNum) || fportNum < 1 || fportNum > 223) {
@@ -213,7 +223,7 @@ datlen: Modbus commando length
                 return;
             }
 
-            ws.send(deveui + ',' + cmd + ',' + fport);
+            ws.send(deveui + ',' + cmd + ',' + fport + ',' + applicationId);
         }
     </script>
     </body>

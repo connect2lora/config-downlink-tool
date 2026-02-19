@@ -37,6 +37,11 @@ app.ws('/', function(ws, req) {
         console.log('Invalid fPort value:', fport, '- using default fPort 2');
       }
     }
+
+    // Check if applicationId is provided (arr[3]), otherwise use default
+    var msgApplicationId = arr[3] && arr[3].trim() !== '' ? arr[3].trim() : applicationId;
+    console.log('Using Application ID:', msgApplicationId);
+
     // cli support for hex data, convert to base64
     if ( arr[1] ) {
       configobj.data = hexToBase64(arr[1]);
@@ -52,10 +57,10 @@ app.ws('/', function(ws, req) {
     var topic;
     if (chirpstackVersion === '4') {
       // ChirpStack v4 uses: application/{app_id}/device/{dev_eui}/command/down
-      topic = 'application/' + applicationId + '/device/' + arr[0] + '/command/down';
+      topic = 'application/' + msgApplicationId + '/device/' + arr[0] + '/command/down';
     } else {
       // ChirpStack v3 uses: application/{app_id}/node/{dev_eui}/tx
-      topic = 'application/' + applicationId + '/node/' + arr[0] + '/tx';
+      topic = 'application/' + msgApplicationId + '/node/' + arr[0] + '/tx';
     }
 
     console.log('Publishing to topic:', topic);
