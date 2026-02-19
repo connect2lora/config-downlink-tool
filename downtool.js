@@ -29,7 +29,13 @@ app.ws('/', function(ws, req) {
     
     // Check if fPort is provided (arr[2])
     if (arr[2] && !isNaN(parseInt(arr[2]))) {
-      configobj.fPort = parseInt(arr[2]);
+      var fport = parseInt(arr[2]);
+      // Validate fPort is in valid range (1-223)
+      if (fport >= 1 && fport <= 223) {
+        configobj.fPort = fport;
+      } else {
+        console.log('Invalid fPort value:', fport, '- using default fPort 2');
+      }
     }
     
     if ( arr[1] ) {
