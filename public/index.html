@@ -34,6 +34,13 @@
                 border: 1px solid #ccc;
                 border-radius: 3px;
             }
+            select {
+                padding: 5px;
+                margin: 5px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                background-color: white;
+            }
             input[type="button"] {
                 padding: 8px 15px;
                 margin: 5px;
@@ -64,6 +71,16 @@
             h2 {
                 color: #555;
                 margin-top: 20px;
+            }
+            #commandReferenceContent {
+                margin-top: 15px;
+            }
+            #commandReferenceContent pre {
+                background-color: #f8f9fa;
+                padding: 15px;
+                border: 1px solid #dee2e6;
+                border-radius: 3px;
+                overflow-x: auto;
             }
         </style>
     </head>
@@ -145,29 +162,76 @@
         // Initial connection attempt
         connect();
 
+        // Function to load available command references
+        function loadCommandReferences() {
+            fetch('/api/command-references')
+                .then(response => response.json())
+                .then(references => {
+                    var select = document.getElementById('deviceSelect');
+                    select.innerHTML = '<option value="">-- Select a device --</option>';
+                    
+                    references.forEach(ref => {
+                        var option = document.createElement('option');
+                        option.value = ref.filename;
+                        option.text = ref.name;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading command references:', error);
+                });
+        }
+
+        // Function to load and display a specific command reference
+        function loadCommandReference() {
+            var select = document.getElementById('deviceSelect');
+            var filename = select.value;
+            var contentDiv = document.getElementById('commandReferenceContent');
+            
+            if (!filename) {
+                contentDiv.innerHTML = '<p>Please select a device reference from the dropdown above.</p>';
+                return;
+            }
+            
+            fetch('/api/command-references/' + encodeURIComponent(filename))
+                .then(response => response.json())
+                .then(data => {
+                    // Display the content in a pre-formatted way
+                    contentDiv.innerHTML = '<h3>' + filename.replace('.md', '') + '</h3><pre>' + 
+                                          escapeHtml(data.content) + '</pre>';
+                })
+                .catch(error => {
+                    console.error('Error loading command reference:', error);
+                    contentDiv.innerHTML = '<p style="color: red;">Error loading command reference.</p>';
+                });
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            var map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Load command references on page load
+        loadCommandReferences();
+
     </script>
 
     <h2>Command Reference</h2>
     <div class="config-section">
-        <h3>Dragino modbus</h3>
-<pre>
-CMD
-01  Transmit Time Interval (4b)
-04  Reset (2)
-08  Pull a uplink
-A8  Modbus commando devcfg
-
-[cmd][crc][datlen]
-
-CMD: a9 = set command1
-CRC: 00 = no crc / 01 add crc16
-datlen: Modbus commando length
-
-06 = modbus addr
-04 = funccode read input reg
-00
-01 = pressure reg
-</pre>
+        <label for="deviceSelect">Select Device Reference:</label>
+        <select id="deviceSelect" onchange="loadCommandReference()">
+            <option value="">-- Select a device --</option>
+        </select>
+        <div id="commandReferenceContent">
+            <p>Please select a device reference from the dropdown above.</p>
+        </div>
     </div>
 
     <div class="config-section">
