@@ -207,7 +207,14 @@ client.on('message', function (topic, message) {
       //  return;
      // }
 
-     wspub(topic + " => " + message.toString() )
+     // Pretty print JSON for communication log
+     try {
+       const prettyJson = JSON.stringify(o, null, 2);
+       wspub(topic + " => \n" + prettyJson )
+     } catch (err) {
+       // Fallback to raw message if JSON stringify fails
+       wspub(topic + " => " + message.toString() )
+     }
     console.log(o.data +":"+ Base64Tohex( o.data) );
 
 
