@@ -2,7 +2,7 @@ Tool to config Lora devices thru downlink.
 
 ## Live Demo
 
-You can access the web interface at: https://connect2lora.github.io/config-downlink-tool/
+You can access the web interface at: https://connect2lora.github.io/config-downlink-tool/public/
 
 **Note:** The live demo requires a running backend server. Follow the setup instructions below to run the backend.
 
