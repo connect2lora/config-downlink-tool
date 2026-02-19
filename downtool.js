@@ -1,7 +1,10 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
-const port = 3001
-const mqtt_loraserver = 'mqtt://loraserver'
+const port = process.env.PORT || 3001
+const mqtt_loraserver = process.env.MQTT_LORASERVER || 'mqtt://loraserver'
+const applicationId = process.env.APPLICATION_ID || '15'
+const chirpstackVersion = process.env.CHIRPSTACK_VERSION || '3'
 var expressWs = require('express-ws')(app);
  
 var mqtt = require('mqtt')
@@ -23,6 +26,18 @@ app.ws('/', function(ws, req) {
   
   
     var configobj = { "confirmed": false,  "fPort": 2 };
+    
+    // Check if fPort is provided (arr[2])
+    if (arr[2] && !isNaN(parseInt(arr[2]))) {
+      var fport = parseInt(arr[2]);
+      // Validate fPort is in valid range (1-223)
+      if (fport >= 1 && fport <= 223) {
+        configobj.fPort = fport;
+      } else {
+        console.log('Invalid fPort value:', fport, '- using default fPort 2');
+      }
+    }
+    
     if ( arr[1] ) {
       configobj.data = hexToBase64(arr[1]);
 
@@ -31,7 +46,18 @@ app.ws('/', function(ws, req) {
 
     }
 
-    client.publish('application/15/node/'+arr[0]+'/tx', JSON.stringify(configobj) )
+    // Determine topic based on ChirpStack version
+    var topic;
+    if (chirpstackVersion === '4') {
+      // ChirpStack v4 uses: application/{app_id}/device/{dev_eui}/command/down
+      topic = 'application/' + applicationId + '/device/' + arr[0] + '/command/down';
+    } else {
+      // ChirpStack v3 uses: application/{app_id}/node/{dev_eui}/tx
+      topic = 'application/' + applicationId + '/node/' + arr[0] + '/tx';
+    }
+    
+    console.log('Publishing to topic:', topic);
+    client.publish(topic, JSON.stringify(configobj))
   });
   console.log('socket', req.testing);
 });
@@ -63,7 +89,7 @@ client.on('connect', function (expressWs) {
         console.log("no conn");
         }
       })*/                             
-      client.subscribe(["application/15/#"], function (err) {
+      client.subscribe(["application/" + applicationId + "/#"], function (err) {
         if (err) {
             console.log("no conn");
             wspub("no mqtt");

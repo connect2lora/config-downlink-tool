@@ -179,6 +179,9 @@ datlen: Modbus commando length
             <label for="cmd">Command:</label>
             <input type="text" name="cmd" id="cmd" value="" size="30">
             <br>
+            <label for="fport">FPort:</label>
+            <input type="number" name="fport" id="fport" value="2" min="1" max="223" size="5">
+            <br>
             <input type="button" name="send" value="Send Command" onclick="sendCommand();">
         </form>
     </div>
@@ -196,7 +199,16 @@ datlen: Modbus commando length
             }
             var deveui = document.getElementById('deveui').value;
             var cmd = document.getElementById('cmd').value;
-            ws.send(deveui + ',' + cmd);
+            var fport = document.getElementById('fport').value;
+            
+            // Validate fPort
+            var fportNum = parseInt(fport);
+            if (isNaN(fportNum) || fportNum < 1 || fportNum > 223) {
+                alert('FPort must be a number between 1 and 223');
+                return;
+            }
+            
+            ws.send(deveui + ',' + cmd + ',' + fport);
         }
     </script>
     </body>
