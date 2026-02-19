@@ -175,14 +175,14 @@ datlen: Modbus commando length
         <form id="modbus" action="/cmd" method="post">
             <label for="deveui">Device EUI:</label>
             <input type="text" name="deveui" id="deveui" value="a84041725182c91b" size="25">
-            <br>
-            <label for="cmd">Command:</label>
-            <input type="text" name="cmd" id="cmd" value="" size="30">
-            <br>
             <label for="fport">FPort:</label>
             <input type="number" name="fport" id="fport" value="2" min="1" max="223" size="5">
             <br>
             <input type="button" name="send" value="Send Command" onclick="sendCommand();">
+            <br>
+            <label for="cmd">Command:</label>
+            <input type="text" name="cmd" id="cmd" value="" size="30">
+
         </form>
     </div>
 
