@@ -202,7 +202,9 @@ client.on('message', function (topic, message) {
       //  return;
      // }
 
-     wspub(topic + " => " + message.toString() )
+     // Pretty print JSON for communication log
+     var prettyJson = JSON.stringify(o, null, 2);
+     wspub(topic + " => \n" + prettyJson )
     console.log(o.data +":"+ Base64Tohex( o.data) );
 
 
