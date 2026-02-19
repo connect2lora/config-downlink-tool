@@ -9,6 +9,8 @@ var expressWs = require('express-ws')(app);
 
 var mqtt = require('mqtt')
 const http = require('http')
+const fs = require('fs')
+const path = require('path')
 
 app.use(function (req, res, next) {
   console.log('middleware');
@@ -78,6 +80,68 @@ app.ws('/echo', function(ws, req) {
 app.post('/cmd', (req, res) => {
   res.send('Hello World!')
 })
+
+// API endpoint to list available command reference files
+app.get('/api/command-references', (req, res) => {
+  const commandRefDir = path.join(__dirname, 'commandreferens')
+  
+  // Check if directory exists
+  if (!fs.existsSync(commandRefDir)) {
+    console.error('Command references directory not found')
+    return res.status(404).json({ error: 'Command references directory not found' })
+  }
+  
+  fs.readdir(commandRefDir, (err, files) => {
+    if (err) {
+      console.error('Error reading commandreferens directory:', err)
+      return res.status(500).json({ error: 'Failed to read command references' })
+    }
+    
+    // Filter for .md files
+    const mdFiles = files.filter(file => file.endsWith('.md'))
+    
+    // Return list of files with their names
+    const references = mdFiles.map(file => ({
+      filename: file,
+      name: file.replace('.md', '')
+    }))
+    
+    res.json(references)
+  })
+})
+
+// API endpoint to get content of a specific command reference file
+app.get('/api/command-references/:filename', (req, res) => {
+  const filename = req.params.filename
+  
+  // Validate filename to prevent directory traversal and null byte injection
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\') || filename.includes('\0')) {
+    return res.status(400).json({ error: 'Invalid filename' })
+  }
+  
+  // Ensure only .md files are served (defense-in-depth)
+  if (!filename.endsWith('.md')) {
+    return res.status(400).json({ error: 'Invalid file type' })
+  }
+  
+  const filePath = path.join(__dirname, 'commandreferens', filename)
+  
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    console.error('Command reference file not found:', filename)
+    return res.status(404).json({ error: 'Command reference not found' })
+  }
+  
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading command reference file:', err)
+      return res.status(500).json({ error: 'Failed to read command reference file' })
+    }
+    
+    res.json({ filename, content: data })
+  })
+})
+
 app.use(express.static('public'))
 
 app.listen(port, () => {
